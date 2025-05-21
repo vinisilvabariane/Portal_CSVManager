@@ -1,0 +1,261 @@
+.result-item:nth-child(8) {
+    transition-delay: 0.8s;
+}
+
+.consult-card,
+.result-section,
+.no-results,
+.result-item {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.consult-card.visible,
+.result-section.visible,
+.no-results.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.result-item.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Delay for each result item */
+.result-item:nth-child(1) {
+    transition-delay: 0.1s;
+}
+
+.result-item:nth-child(2) {
+    transition-delay: 0.2s;
+}
+
+.result-item:nth-child(3) {
+    transition-delay: 0.3s;
+}
+
+.result-item:nth-child(4) {
+    transition-delay: 0.4s;
+}
+
+.result-item:nth-child(5) {
+    transition-delay: 0.5s;
+}
+
+.result-item:nth-child(6) {
+    transition-delay: 0.6s;
+}
+
+.result-item:nth-child(7) {
+    transition-delay: 0.7s;
+}
+
+
+
+.result-item:nth-child(9) {
+    transition-delay: 0.9s;
+}
+
+/* Result item styling */
+.result-item {
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eee;
+}
+
+.result-item:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.result-label {
+    font-weight: 600;
+    color: #555;
+    display: inline-block;
+    width: 180px;
+}
+
+.result-value {
+    color: #333;
+}
+
+/* Badge styling */
+.badge {
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+    .result-label {
+        display: block;
+        width: 100%;
+        margin-bottom: 5px;
+    }
+}
+
+.consult-section {
+    background: linear-gradient(135deg, #e6f2ff 0%, #cce0ff 100%);
+    min-height: 100vh;
+    padding: 5rem 0;
+}
+
+.consult-card {
+    box-shadow: 0 10px 30px rgba(0, 102, 255, 0.1);
+    border: none;
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.consult-card.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.consult-header {
+    background-color: #0066ff;
+    color: white;
+    padding: 1.5rem;
+    text-align: center;
+}
+
+.consult-body {
+    padding: 2rem;
+}
+
+.form-label {
+    font-weight: 600;
+    color: #1a3e72;
+}
+
+.form-control {
+    padding: 0.8rem 1rem;
+    border: 1px solid #dee2e6;
+}
+
+.form-control:focus {
+    border-color: #0066ff;
+    box-shadow: 0 0 0 0.25rem rgba(0, 102, 255, 0.25);
+}
+
+.btn-consult {
+    background-color: #0066ff;
+    border-color: #0066ff;
+    color: white;
+    padding: 0.8rem 2rem;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.btn-consult:hover {
+    background-color: #0052cc;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 102, 255, 0.2);
+}
+
+.result-section {
+    display: none;
+    margin-top: 2rem;
+    padding: 1.5rem;
+    background-color: #f8f9fa;
+    border-left: 4px solid #0066ff;
+    opacity: 0;
+    transition: opacity 0.6s ease-out;
+}
+
+.result-section.visible {
+    opacity: 1;
+}
+
+.result-title {
+    color: #0066ff;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.result-item {
+    margin-bottom: 0.8rem;
+    opacity: 0;
+    transform: translateX(-10px);
+    transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+}
+
+.result-item.visible {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.result-label {
+    font-weight: 600;
+    color: #495057;
+}
+
+.result-value {
+    color: #1a3e72;
+}
+
+.no-results {
+    text-align: center;
+    padding: 2rem;
+    color: #6c757d;
+    opacity: 0;
+    transition: opacity 0.6s ease-out;
+}
+
+.no-results.visible {
+    opacity: 1;
+}
+
+@media (max-width: 768px) {
+    .consult-section {
+        padding: 3rem 0;
+    }
+
+    .consult-body {
+        padding: 1.5rem;
+    }
+}
+
+/* Efeitos de delay para os itens de resultado */
+.result-item:nth-child(1) {
+    transition-delay: 0.1s;
+}
+
+.result-item:nth-child(2) {
+    transition-delay: 0.2s;
+}
+
+.result-item:nth-child(3) {
+    transition-delay: 0.3s;
+}
+
+.result-item:nth-child(4) {
+    transition-delay: 0.4s;
+}
+
+.result-item:nth-child(5) {
+    transition-delay: 0.5s;
+}
+
+.result-item:nth-child(6) {
+    transition-delay: 0.6s;
+}
+
+.result-item:nth-child(7) {
+    transition-delay: 0.7s;
+}
+
+.result-item:nth-child(8) {
+    transition-delay: 0.8s;
+}
+
+.result-item:nth-child(9) {
+    transition-delay: 0.9s;
+}

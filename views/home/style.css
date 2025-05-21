@@ -1,0 +1,196 @@
+.hero-section {
+    background: linear-gradient(135deg, #e6f2ff 0%, #cce0ff 100%);
+    position: relative;
+    overflow: hidden;
+    min-height: 100vh;
+}
+
+
+#particles-js {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    z-index: 0;
+    background-color: #cce0ff;
+    background-image: url("");
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: 50% 50%;
+}
+
+.hero-section {
+    position: relative;
+    z-index: 1;
+    background: transparent;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+}
+
+.hero-container {
+    position: relative;
+    z-index: 2;
+    height: 100%;
+}
+
+.hero-content {
+    max-width: 600px;
+}
+
+.hero-title {
+    font-size: 3.5rem;
+    font-weight: 800;
+    line-height: 1.2;
+    margin-bottom: 1.5rem;
+    color: #1a3e72;
+}
+
+.hero-title span.text-primary {
+    color: #0066ff;
+}
+
+.hero-subtitle {
+    font-size: 1.25rem;
+    color: #4a6fa5;
+    margin-bottom: 2rem;
+}
+
+.hero-buttons .btn {
+    padding: 0.8rem 2rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-radius: 50px;
+    transition: all 0.3s;
+}
+
+.btn-hero-primary {
+    background-color: #0066ff;
+    border-color: #0066ff;
+    color: white;
+}
+
+.btn-hero-primary:hover {
+    background-color: #0052cc;
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(0, 102, 255, 0.2);
+}
+
+.btn-hero-outline {
+    border: 2px solid #0066ff;
+    color: #0066ff;
+}
+
+.btn-hero-outline:hover {
+    background-color: rgba(0, 102, 255, 0.1);
+}
+
+.hero-animation {
+    max-width: 600px;
+    animation: float 6s ease-in-out infinite;
+    position: relative;
+    z-index: 1;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+}
+
+/* Cloud Divider Styles */
+.cloud-divider {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    overflow: hidden;
+    line-height: 0;
+    transform: rotate(180deg);
+    z-index: 1;
+}
+
+.cloud-divider svg {
+    position: relative;
+    display: block;
+    width: calc(100% + 1.3px);
+    height: 150px;
+}
+
+.cloud-divider .shape-fill {
+    fill: #FFFFFF;
+}
+
+/* Features Section Adjustment */
+#features {
+    position: relative;
+    z-index: 2;
+}
+
+/* Animações de aparecimento */
+.fade-in {
+    opacity: 0;
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.fade-in.visible {
+    opacity: 1;
+}
+
+.slide-up {
+    transform: translateY(20px);
+}
+
+.slide-up.visible {
+    transform: translateY(0);
+}
+
+.delay-1 {
+    transition-delay: 0.2s;
+}
+
+.delay-2 {
+    transition-delay: 0.4s;
+}
+
+.delay-3 {
+    transition-delay: 0.6s;
+}
+
+@keyframes float {
+    0% {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(-20px);
+    }
+
+    100% {
+        transform: translateY(0px);
+    }
+}
+
+
+@media (max-width: 820.98px) {
+
+    .hero-content {
+        text-align: center;
+        margin: 0 auto;
+        margin-top: 0rem;
+    }
+
+    .hero-buttons {
+        justify-content: center;
+    }
+
+    .cloud-divider svg {
+        height: 80px;
+    }
+
+    .hero-animation {
+        display: none !important;
+    }
+}

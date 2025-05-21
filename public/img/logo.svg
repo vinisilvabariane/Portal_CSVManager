@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 400">
+    <path fill="#0066ff" d="M250,50c100,0,180,60,200,150c-20,90-100,150-200,150S70,290,50,200C70,110,150,50,250,50z">
+        <animate attributeName="opacity" values="0.7;1;0.7" dur="4s" repeatCount="indefinite" />
+    </path>
+    <path fill="none" stroke="#ffffff" stroke-width="15" stroke-linecap="round" stroke-dasharray="100"
+        stroke-dashoffset="100" d="M150,200l70,70l130-130">
+        <animate attributeName="stroke-dashoffset" values="100;0" dur="1s" begin="0.5s" fill="freeze" />
+    </path>
+    <circle cx="250" cy="200" r="10" fill="#ffffff">
+        <animate attributeName="r" values="10;15;10" dur="2s" begin="1.5s" repeatCount="indefinite" />
+        <animate attributeName="opacity" values="1;0.5;1" dur="2s" begin="1.5s" repeatCount="indefinite" />
+    </circle>
+    <g fill="#ffffff">
+        <circle cx="350" cy="120" r="3">
+            <animate attributeName="cy" values="120;110;120" dur="3s" repeatCount="indefinite" />
+        </circle>
+        <circle cx="180" cy="90" r="2">
+            <animate attributeName="cx" values="180;190;180" dur="4s" repeatCount="indefinite" />
+        </circle>
+        <circle cx="300" cy="280" r="2.5">
+            <animate attributeName="cy" values="280;270;280" dur="5s" repeatCount="indefinite" />
+        </circle>
+    </g>
+</svg>

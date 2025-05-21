@@ -1,0 +1,14 @@
+       .login-card {
+           max-width: 400px;
+           margin: 0 auto;
+           position: relative;
+           /* Adicionado para posicionamento relativo */
+       }
+
+       .multi-logo {
+           position: absolute;
+           top: 15px;
+           left: 15px;
+           height: 20px;
+           width: auto;
+       }
