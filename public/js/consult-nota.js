@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', function () {
                             produtosAgrupados[produto.SKU] = {
                                 SKU: produto.SKU,
                                 Descricao: produto.Descricao || 'N/A',
-                                DataFaturamento: produto.DataFaturamento,
+                                DataFinalGarantia: produto.DataFinalGarantia,
                                 SituacaoGarantia: produto.SituacaoGarantia,
                                 Seriais: []
                             };
@@ -61,7 +61,7 @@ document.addEventListener('DOMContentLoaded', function () {
                             <td>${produto.SKU}</td>
                             <td>${produto.Descricao}</td>
                             <td>${produto.Seriais.join(', ')}</td>
-                            <td>${produto.DataFaturamento ? formatDate(produto.DataFaturamento) : 'N/A'}</td>
+                            <td>${produto.DataFinalGarantia ? formatDate(produto.DataFinalGarantia) : 'N/A'}</td>
                             <td>
                                 <span class="badge bg-${produto.SituacaoGarantia === 'Dentro da Garantia' ? 'success' : 'danger'}">
                                     ${produto.SituacaoGarantia}
@@ -91,7 +91,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
 function formatDate(dateString) {
     if (!dateString) return 'N/A';
+    if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateString)) {
+        return dateString;
+    }
     const date = new Date(dateString);
+    if (isNaN(date.getTime())) {
+        const match = dateString.match(/^(\d{2})-(\d{2})-(\d{4})$/);
+        if (match) {
+            const [_, dia, mes, ano] = match;
+            return `${dia}/${mes}/${ano}`;
+        }
+        return 'Data inválida';
+    }
     return date.toLocaleDateString('pt-BR');
 }
 

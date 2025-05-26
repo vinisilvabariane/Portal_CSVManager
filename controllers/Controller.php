@@ -163,11 +163,14 @@ class Controller
             echo json_encode(['error' => $e->getMessage()]);
         }
     }
-    
+
     public function getUserProfile()
     {
         header('Content-Type: application/json');
         try {
+            if (session_status() === PHP_SESSION_NONE) {
+                session_start();
+            }
             if (!isset($_SESSION['user_id'])) {
                 throw new Exception("Usuário não autenticado");
             }
@@ -177,16 +180,103 @@ class Controller
             if (!$userData) {
                 throw new Exception("Usuário não encontrado");
             }
+            $responseData = [
+                'name' => $userData['name'] ?? null,
+                'role' => $userData['role'] ?? null,
+                'email' => $userData['email'] ?? null,
+                'phone' => $userData['phone'] ?? null,
+                'cnpj' => $userData['cnpj'] ?? null,
+                'created_at' => $userData['created_at'] ?? null,
+                'orgao' => $userData['orgao'] ?? null
+            ];
             echo json_encode([
                 'success' => true,
-                'data' => $userData
+                'data' => $responseData
             ]);
         } catch (Exception $e) {
+            http_response_code(500);
             echo json_encode([
                 'success' => false,
                 'message' => $e->getMessage()
             ]);
         }
+        exit;
+    }
+
+    public function updateUserProfile()
+    {
+        header('Content-Type: application/json');
+
+        try {
+            // Inicia sessão se necessário
+            if (session_status() === PHP_SESSION_NONE) {
+                session_start();
+            }
+
+            // Verifica autenticação
+            if (!isset($_SESSION['user_id'])) {
+                throw new Exception("Usuário não autenticado");
+            }
+
+            $userId = $_SESSION['user_id'];
+            $input = json_decode(file_get_contents('php://input'), true);
+
+            // Validação dos dados de entrada
+            if (empty($input)) {
+                throw new Exception("Dados inválidos");
+            }
+
+            // Sanitização e validação
+            $email = filter_var($input['email'] ?? '', FILTER_SANITIZE_EMAIL);
+            $phone = preg_replace('/[^0-9]/', '', $input['phone'] ?? '');
+            $cnpj = preg_replace('/[^0-9]/', '', $input['cnpj'] ?? '');
+            $orgao = filter_var($input['orgao'] ?? '', FILTER_SANITIZE_STRING);
+
+            // Validações obrigatórias
+            if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                throw new Exception("Email inválido");
+            }
+
+            if (empty($orgao)) {
+                throw new Exception("Órgão é obrigatório");
+            }
+
+            if (!empty($cnpj) && strlen($cnpj) != 14) {
+                throw new Exception("CNPJ deve conter 14 dígitos");
+            }
+
+            // Atualiza no banco
+            $userModel = new Model();
+            $result = $userModel->updateProfile($userId, $email, $phone, $cnpj, $orgao);
+
+            if (!$result['success']) {
+                throw new Exception($result['message']);
+            }
+
+            // Atualiza sessão
+            $_SESSION['user_email'] = $email;
+            $_SESSION['user_phone'] = $phone;
+            $_SESSION['user_cnpj'] = $cnpj;
+            $_SESSION['user_orgao'] = $orgao;
+
+            echo json_encode([
+                'success' => true,
+                'message' => 'Perfil atualizado com sucesso',
+                'data' => [
+                    'email' => $email,
+                    'phone' => $phone,
+                    'cnpj' => $cnpj,
+                    'orgao' => $orgao
+                ]
+            ]);
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode([
+                'success' => false,
+                'message' => $e->getMessage()
+            ]);
+        }
+        exit;
     }
 
     private function sendErrorResponse(int $statusCode, string $message): void

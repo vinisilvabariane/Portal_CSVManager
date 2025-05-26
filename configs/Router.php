@@ -23,6 +23,12 @@ switch ($action) {
     case "consultGarantia";
         $controller->consultGarantia();
         break;
+    case "getUserProfile";
+        $controller->getUserProfile();
+        break;
+    case "updateUserProfile";
+        $controller->updateUserProfile();
+        break;
     default:
         header("Content-Type: application/json");
         http_response_code(405);

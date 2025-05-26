@@ -164,6 +164,7 @@ class Model
         }
     }
 
+    //FUNÇÃO DE COSULTA DE GARANTIA POR NOTA FISCAL
     public function getGarantiaByNota($numeroNota)
     {
         try {
@@ -198,6 +199,50 @@ class Model
             return ['success' => false, 'message' => 'Nenhum produto encontrado para esta nota fiscal'];
         } catch (PDOException $e) {
             throw new Exception("Erro na consulta: " . $e->getMessage());
+        }
+    }
+
+    //FUNÇÃO DE UPDATE DO PERFIL
+    public function updateProfile($userId, $email, $phone, $cnpj, $orgao)
+    {
+        try {
+            if (!is_numeric($userId) || $userId <= 0) {
+                throw new Exception("ID de usuário inválido");
+            }
+            $stmt = $this->pdo->prepare("SELECT id FROM users WHERE email = ? AND id != ?");
+            $stmt->execute([$email, $userId]);
+            if ($stmt->rowCount() > 0) {
+                throw new Exception("Este email já está em uso por outro usuário");
+            }
+            if (!empty($cnpj)) {
+                $stmt = $this->pdo->prepare("SELECT id FROM users WHERE cnpj = ? AND id != ?");
+                $stmt->execute([$cnpj, $userId]);
+                if ($stmt->rowCount() > 0) {
+                    throw new Exception("Este CNPJ já está em uso por outro usuário");
+                }
+            }
+            $query = "UPDATE users SET 
+                email = :email, 
+                phone = :phone, 
+                cnpj = :cnpj, 
+                orgao = :orgao, 
+                created_at = NOW() 
+                WHERE id = :id";
+            $stmt = $this->pdo->prepare($query);
+            $stmt->execute([
+                ':email' => $email,
+                ':phone' => $phone,
+                ':cnpj' => $cnpj,
+                ':orgao' => $orgao,
+                ':id' => $userId
+            ]);
+            if ($stmt->rowCount() === 0) {
+                throw new Exception("Nenhum dado foi alterado - verifique se os dados são diferentes dos atuais");
+            }
+            return ['success' => true, 'message' => 'Perfil atualizado com sucesso'];
+        } catch (PDOException $e) {
+            error_log("Erro no Model ao atualizar perfil: " . $e->getMessage());
+            throw new Exception("Erro ao atualizar perfil: " . $e->getMessage());
         }
     }
 

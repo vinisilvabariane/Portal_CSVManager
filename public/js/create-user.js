@@ -21,8 +21,8 @@ document.addEventListener('DOMContentLoaded', function () {
         observer.observe(el);
     });
     // Máscaras
-    $('#cnpj').mask('000.000.000-00', {
-        reverse: true
+    $('#cnpj').mask('00.000.000/0000-00', {
+        reverse: false // Não precisa do 'reverse: true' para CNPJ
     });
     $('#phone').mask('(00) 00000-0000');
     // Validação do formulário

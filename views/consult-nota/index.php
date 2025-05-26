@@ -53,7 +53,7 @@
                                                     <th>SKU</th>
                                                     <th>Descrição</th>
                                                     <th>Serial</th>
-                                                    <th>Data Compra</th>
+                                                    <th>Data Final da Garantia</th>
                                                     <th>Garantia</th>
                                                 </tr>
                                             </thead>
