@@ -39,7 +39,7 @@
                         <th>SKU</th>
                         <th>Tempo Garantia (Meses)</th>
                         <th>Bateria</th>
-                        <th>Data Final Garantia</th>
+                        <th>Data Final Garantia a Partir da Data Atual</th>
                         <th>Ações</th>
                     </tr>
                 </thead>

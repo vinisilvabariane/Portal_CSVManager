@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', function () {
             { title: "SKU" },
             { title: "Tempo Garantia (meses)" },
             { title: "Bateria" },
-            { title: "Data Final Garantia" },
+            { title: "Data Final da Garantia a Partir da Data Atual" },
             {
                 title: "Ações",
                 orderable: false,
@@ -50,7 +50,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         item.TempoGarantiaMeses || '',
                         item.Bateria || 0,
                         formatDate(item.DataFinalGarantia),
-                        createActionButtons(item.SKU) // Adiciona os botões de ação
+                        createActionButtons(item.SKU)
                     ]);
                 });
                 table.draw();
@@ -78,7 +78,7 @@ document.addEventListener('DOMContentLoaded', function () {
         return date.toLocaleDateString('pt-BR');
     }
 
-    // Delegar evento de clique para os botões de delete (por causa do carregamento dinâmico)
+    // Delegar evento de clique para os botões de delete
     document.addEventListener('click', function (e) {
         if (e.target.classList.contains('delete-btn') || e.target.closest('.delete-btn')) {
             const button = e.target.classList.contains('delete-btn') ? e.target : e.target.closest('.delete-btn');
@@ -115,7 +115,7 @@ document.addEventListener('DOMContentLoaded', function () {
                                 'O registro foi deletado.',
                                 'success'
                             );
-                            fetchData()
+                            fetchData();
                         } else {
                             throw new Error(data.message || 'Erro ao deletar');
                         }
@@ -132,24 +132,29 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Gerenciamento do modal de upload
+    // Gerenciamento do modal de upload - Código atualizado para tratar o erro
     const csvFileInput = document.getElementById('csvFile');
     const fileNameDisplay = document.getElementById('fileName');
+
     if (csvFileInput && fileNameDisplay) {
         csvFileInput.addEventListener('change', function () {
             fileNameDisplay.textContent = this.files.length > 0
                 ? this.files[0].name
                 : 'Nenhum arquivo selecionado';
         });
+
         document.getElementById("uploadBtn").addEventListener("click", function () {
             const fileInput = document.getElementById("csvFile");
             const file = fileInput.files[0];
+
             if (!file) {
                 Swal.fire("Erro", "Selecione um arquivo CSV.", "error");
                 return;
             }
+
             const formData = new FormData();
             formData.append("csvFile", file);
+
             Swal.fire({
                 title: 'Enviando arquivo',
                 html: 'Por favor, aguarde...',
@@ -158,39 +163,56 @@ document.addEventListener('DOMContentLoaded', function () {
                     Swal.showLoading();
                 }
             });
+
             fetch("/PortalMultiGarantia/configs/Router.php?action=uploadGarantiasCSV", {
                 method: "POST",
                 body: formData,
             })
                 .then(async response => {
                     const text = await response.text();
-                    try {
-                        return JSON.parse(text);
-                    } catch (e) {
-                        throw new Error(text || 'Erro desconhecido');
+
+                    // Tratamento especial para extrair o JSON mesmo com erros antes
+                    const jsonMatch = text.match(/\{.*\}/s);
+                    if (jsonMatch) {
+                        try {
+                            const data = JSON.parse(jsonMatch[0]);
+                            if (data.success) {
+                                return data;
+                            }
+                            throw new Error(data.message || 'Erro no upload');
+                        } catch (e) {
+                            throw new Error(text);
+                        }
                     }
+                    throw new Error(text || 'Resposta inválida do servidor');
                 })
                 .then(data => {
-                    if (data.success) {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Sucesso',
-                            text: data.message,
-                            timer: 2000,
-                            showConfirmButton: false
+                    let htmlMsg = data.message;
+                    if (data.erros > 0 && Array.isArray(data.detalhes) && data.detalhes.length > 0) {
+                        htmlMsg += `<br><br><b>Erros detalhados:</b><ul style="text-align:left;">`;
+                        data.detalhes.forEach((detalhe, idx) => {
+                            htmlMsg += `<li>Linha ${idx + 2}: ${detalhe.linha.join('; ')}<br><small>${JSON.stringify(detalhe.erro)}</small></li>`;
                         });
-                        $('#uploadModal').modal('hide');
-                        fetchData();
-                    } else {
-                        throw new Error(data.message);
+                        htmlMsg += '</ul>';
                     }
+                    Swal.fire({
+                        icon: data.erros > 0 ? 'warning' : 'success',
+                        title: data.erros > 0 ? 'Importação com Erros' : 'Sucesso',
+                        html: htmlMsg,
+                        timer: 6000,
+                        showConfirmButton: true
+                    });
+                    $('#uploadModal').modal('hide');
+                    fetchData();
                 })
                 .catch(error => {
                     console.error("Erro no upload:", error);
                     Swal.fire({
                         icon: 'error',
-                        title: 'Erro',
-                        text: error.message || 'Falha no upload do arquivo.',
+                        title: 'Erro no upload',
+                        text: error.message.includes('{') ?
+                            'O arquivo foi processado, mas ocorreu um erro na resposta.' :
+                            error.message || 'Falha no upload do arquivo.',
                     });
                 });
         });
@@ -198,8 +220,6 @@ document.addEventListener('DOMContentLoaded', function () {
         $('#uploadModal').on('hidden.bs.modal', function () {
             document.getElementById('uploadForm').reset();
             fileNameDisplay.textContent = 'Nenhum arquivo selecionado';
-            document.getElementById('uploadProgress').style.display = 'none';
         });
     }
-
 });

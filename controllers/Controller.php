@@ -259,6 +259,10 @@ class Controller
 
     public function uploadGarantiasCSV()
     {
+        if (headers_sent()) {
+            error_log("Headers já enviados!");
+        }
+        ob_clean();
         header('Content-Type: application/json');
         try {
             if (!isset($_FILES['csvFile']) || $_FILES['csvFile']['error'] !== UPLOAD_ERR_OK) {
@@ -277,25 +281,34 @@ class Controller
             $model = new Model();
             $importados = 0;
             $erros = 0;
+            $errosDetalhes = [];
             while (($data = fgetcsv($handle, 0, ';')) !== false) {
                 if (count($data) >= 4) {
                     $cliente = trim($data[0]);
                     $sku = trim($data[1]);
                     $tempo = intval($data[2]);
-                    $bateria = trim($data[3]);
-                    if ($model->inserirGarantia($cliente, $sku, $tempo, $bateria)) {
+                    $bateria = intval($data[3]);
+                    $result = $model->inserirGarantia($cliente, $sku, $tempo, $bateria);
+                    if ($result === true) {
                         $importados++;
                     } else {
                         $erros++;
+                        $errosDetalhes[] = [
+                            'linha' => $data,
+                            'erro' => $result
+                        ];
                     }
                 }
             }
             fclose($handle);
             $response = [
-                'success' => true,
-                'message' => "Dados importados com sucesso! ($importados registros)",
+                'success' => $importados > 0,
+                'message' => $importados > 0
+                    ? "Dados importados com sucesso! ($importados registros)"
+                    : "Nenhum registro foi importado.",
                 'importados' => $importados,
-                'erros' => $erros
+                'erros' => $erros,
+                'detalhes' => $errosDetalhes ?? []
             ];
             echo json_encode($response);
             exit;
@@ -324,7 +337,7 @@ class Controller
                 throw new Exception('Erro ao abrir o arquivo CSV');
             }
             $header = fgetcsv($handle, 0, ';');
-            $required = ['NotaFiscal', 'DataFaturamento', 'Cliente', 'Serial', 'Imei', 'SKU', 'DataFinalGarantia'];
+            $required = ['NotaFiscal', 'DataFaturamento', 'Cliente', 'Serial', 'Imei', 'SKU'];
             foreach ($required as $col) {
                 if (!in_array($col, $header)) {
                     throw new Exception("Coluna obrigatória ausente: $col");
@@ -333,7 +346,7 @@ class Controller
             $importados = 0;
             $erros = 0;
             while (($data = fgetcsv($handle, 0, ';')) !== false) {
-                if (count($data) >= 7) {
+                if (count($data) >= 6) {
                     $row = array_combine($header, $data);
                     $nota = trim($row['NotaFiscal']);
                     $dataFat = trim($row['DataFaturamento']);
@@ -341,8 +354,7 @@ class Controller
                     $serial = trim($row['Serial']);
                     $imei = trim($row['Imei']);
                     $sku = trim($row['SKU']);
-                    $dataFinal = trim($row['DataFinalGarantia']);
-                    if ($this->model->inserirSerial($nota, $dataFat, $cliente, $serial, $imei, $sku, $dataFinal)) {
+                    if ($this->model->inserirSerial($nota, $dataFat, $cliente, $serial, $imei, $sku)) {
                         $importados++;
                     } else {
                         $erros++;

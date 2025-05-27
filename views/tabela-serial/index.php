@@ -41,7 +41,7 @@
                         <th>Serial</th>
                         <th>IMEI</th>
                         <th>SKU</th>
-                        <th>Data Final de Garantia</th>
+                        <th>Data Final a Partir da Data de Faturamento</th>
                         <th>Status</th>
                         <th>Ações</th>
                     </tr>

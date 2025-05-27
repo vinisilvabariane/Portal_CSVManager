@@ -18,7 +18,6 @@ document.addEventListener('DOMContentLoaded', function () {
             fetchData();
         }
     });
-
     function fetchData() {
         fetch('/PortalMultiGarantia/configs/Router.php?action=getSerial')
             .then(response => {
@@ -109,9 +108,15 @@ document.addEventListener('DOMContentLoaded', function () {
             })
                 .then(async response => {
                     const text = await response.text();
-                    try {
-                        return JSON.parse(text);
-                    } catch (e) {
+                    // Tenta extrair o JSON mesmo se vier lixo antes/depois
+                    const jsonMatch = text.match(/{.*}/s);
+                    if (jsonMatch) {
+                        try {
+                            return JSON.parse(jsonMatch[0]);
+                        } catch (e) {
+                            throw new Error(text || 'Erro desconhecido');
+                        }
+                    } else {
                         throw new Error(text || 'Erro desconhecido');
                     }
                 })
@@ -140,7 +145,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     });
                 });
         });
-
         $('#uploadModal').on('hidden.bs.modal', function () {
             document.getElementById('uploadForm').reset();
             fileNameDisplay.textContent = 'Nenhum arquivo selecionado';

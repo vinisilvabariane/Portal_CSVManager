@@ -68,15 +68,17 @@ class Model
     public function getSerial()
     {
         $query = "SELECT 
-                    NotaFiscal, 
-                    DataFaturamento, 
-                    Cliente, 
-                    Serial, 
-                    Imei, 
-                    SKU, 
-                    DataFinalGarantia
-                  FROM tabela_seriais
-                  ORDER BY DataFaturamento DESC";
+                    s.NotaFiscal, 
+                    s.DataFaturamento, 
+                    s.Cliente, 
+                    s.Serial, 
+                    s.Imei, 
+                    s.SKU, 
+                    g.TempoGarantiaMeses,
+                    DATE_ADD(s.DataFaturamento, INTERVAL g.TempoGarantiaMeses MONTH) AS DataFinalGarantia
+                  FROM tabela_seriais s
+                  INNER JOIN tabela_garantia g ON s.SKU = g.SKU
+                  ORDER BY s.DataFaturamento DESC";
         $stmt = $this->pdo->prepare($query);
         $stmt->execute();
         $seriais = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -128,27 +130,29 @@ class Model
         try {
             $stmt = $this->pdo->prepare("
                 SELECT 
-                    NotaFiscal,
-                    DataFaturamento,
-                    Cliente,
-                    Serial,
-                    Imei,
-                    SKU,
-                    DataFinalGarantia,
-                    CASE 
-                        WHEN DataFinalGarantia >= CURDATE() THEN 'Dentro da Garantia'
-                        ELSE 'Fora da Garantia'
-                    END AS SituacaoGarantia,
-                    DATEDIFF(DataFinalGarantia, CURDATE()) AS DiasRestantes
-                FROM tabela_seriais 
-                WHERE Serial = :serial
+                    s.NotaFiscal,
+                    s.DataFaturamento,
+                    s.Cliente,
+                    s.Serial,
+                    s.Imei,
+                    s.SKU,
+                    g.TempoGarantiaMeses,
+                    DATE_ADD(s.DataFaturamento, INTERVAL g.TempoGarantiaMeses MONTH) AS DataFinalGarantiaCalculada,
+                    DATEDIFF(DATE_ADD(s.DataFaturamento, INTERVAL g.TempoGarantiaMeses MONTH), CURDATE()) AS DiasRestantes
+                FROM tabela_seriais s
+                INNER JOIN tabela_garantia g ON s.SKU = g.SKU
+                WHERE s.Serial = :serial
             ");
             $stmt->bindParam(':serial', $serialNumber);
             $stmt->execute();
             $result = $stmt->fetch(PDO::FETCH_ASSOC);
             if ($result) {
                 $result['DataFaturamento'] = date('d/m/Y', strtotime($result['DataFaturamento']));
-                $result['DataFinalGarantia'] = date('d/m/Y', strtotime($result['DataFinalGarantia']));
+                $result['DataFinalGarantia'] = date('d/m/Y', strtotime($result['DataFinalGarantiaCalculada']));
+                $dataFinal = DateTime::createFromFormat('d/m/Y', $result['DataFinalGarantia']);
+                $hoje = new DateTime();
+                $result['SituacaoGarantia'] = ($dataFinal && $dataFinal >= $hoje) ? 'Dentro da Garantia' : 'Fora da Garantia';
+                unset($result['DataFinalGarantiaCalculada']);
                 return $result;
             }
             return null;
@@ -162,16 +166,18 @@ class Model
         try {
             $stmt = $this->pdo->prepare("
             SELECT 
-                NotaFiscal,
-                DataFaturamento,
-                Cliente,
-                Serial,
-                Imei,
-                SKU,
-                DataFinalGarantia,
-                DATEDIFF(DataFinalGarantia, CURDATE()) AS DiasRestantes
-            FROM tabela_seriais 
-            WHERE NotaFiscal = :nota
+                s.NotaFiscal,
+                s.DataFaturamento,
+                s.Cliente,
+                s.Serial,
+                s.Imei,
+                s.SKU,
+                g.TempoGarantiaMeses,
+                DATE_ADD(s.DataFaturamento, INTERVAL g.TempoGarantiaMeses MONTH) AS DataFinalGarantiaCalculada,
+                DATEDIFF(DATE_ADD(s.DataFaturamento, INTERVAL g.TempoGarantiaMeses MONTH), CURDATE()) AS DiasRestantes
+            FROM tabela_seriais s
+            INNER JOIN tabela_garantia g ON s.SKU = g.SKU
+            WHERE s.NotaFiscal = :nota
         ");
             $stmt->bindParam(':nota', $numeroNota);
             $stmt->execute();
@@ -179,10 +185,11 @@ class Model
             if ($results) {
                 foreach ($results as &$result) {
                     $result['DataFaturamento'] = date('d/m/Y', strtotime($result['DataFaturamento']));
-                    $result['DataFinalGarantia'] = date('d/m/Y', strtotime($result['DataFinalGarantia']));
+                    $result['DataFinalGarantia'] = date('d/m/Y', strtotime($result['DataFinalGarantiaCalculada']));
                     $dataFinal = DateTime::createFromFormat('d/m/Y', $result['DataFinalGarantia']);
                     $hoje = new DateTime();
                     $result['SituacaoGarantia'] = ($dataFinal && $dataFinal >= $hoje) ? 'Dentro da Garantia' : 'Fora da Garantia';
+                    unset($result['DataFinalGarantiaCalculada']);
                 }
                 return ['success' => true, 'data' => $results];
             }
@@ -250,36 +257,40 @@ class Model
     public function inserirGarantia($cliente, $sku, $tempoGarantia, $bateria)
     {
         try {
-            $stmt = $this->pdo->prepare("INSERT INTO tabela_garantia (Cliente, SKU, TempoGarantiaMeses, Bateria)
-                            VALUES (?, ?, ?, ?)
-                            ON DUPLICATE KEY UPDATE 
-                            TempoGarantiaMeses = VALUES(TempoGarantiaMeses), 
-                            Bateria = VALUES(Bateria)");
-            $stmt->bindParam(1, $cliente, PDO::PARAM_STR);
-            $stmt->bindParam(2, $sku, PDO::PARAM_STR);
-            $stmt->bindParam(3, $tempoGarantia, PDO::PARAM_INT);
-            $stmt->bindParam(4, $bateria, PDO::PARAM_INT);
-            $stmt->execute();
-            return true;
+            $stmt = $this->pdo->prepare("INSERT INTO tabela_garantia 
+            (Cliente, SKU, TempoGarantiaMeses, Bateria)
+            VALUES (?, ?, ?, ?)
+            ON DUPLICATE KEY UPDATE 
+                TempoGarantiaMeses = VALUES(TempoGarantiaMeses), 
+                Bateria = VALUES(Bateria)");
+            $success = $stmt->execute([
+                $cliente,
+                $sku,
+                $tempoGarantia,
+                $bateria
+            ]);
+            if (!$success) {
+                return $stmt->errorInfo();
+            }
+            return $success;
         } catch (PDOException $e) {
             error_log("Erro ao inserir garantia: " . $e->getMessage());
-            return false;
+            return $e->getMessage();
         }
     }
 
     //FUNÇÃO PARA INSERIR O CSV DE SERIAIS
-    public function inserirSerial($notaFiscal, $dataFaturamento, $cliente, $serial, $imei, $sku, $dataFinalGarantia)
+    public function inserirSerial($notaFiscal, $dataFaturamento, $cliente, $serial, $imei, $sku)
     {
         try {
             $sql = "INSERT INTO tabela_seriais 
-            (NotaFiscal, DataFaturamento, Cliente, Serial, Imei, SKU, DataFinalGarantia)
-            VALUES (:notaFiscal, :dataFaturamento, :cliente, :serial, :imei, :sku, :dataFinalGarantia)
+            (NotaFiscal, DataFaturamento, Cliente, Serial, Imei, SKU)
+            VALUES (:notaFiscal, :dataFaturamento, :cliente, :serial, :imei, :sku)
             ON DUPLICATE KEY UPDATE 
                 DataFaturamento = VALUES(DataFaturamento),
                 Cliente = VALUES(Cliente),
                 Imei = VALUES(Imei),
-                SKU = VALUES(SKU),
-                DataFinalGarantia = VALUES(DataFinalGarantia)";
+                SKU = VALUES(SKU)";
             $stmt = $this->pdo->prepare($sql);
             $stmt->bindParam(':notaFiscal', $notaFiscal);
             $stmt->bindParam(':dataFaturamento', $dataFaturamento);
@@ -287,7 +298,6 @@ class Model
             $stmt->bindParam(':serial', $serial);
             $stmt->bindParam(':imei', $imei);
             $stmt->bindParam(':sku', $sku);
-            $stmt->bindParam(':dataFinalGarantia', $dataFinalGarantia);
             return $stmt->execute();
         } catch (PDOException $e) {
             error_log("Erro ao inserir serial: " . $e->getMessage());
