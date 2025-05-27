@@ -308,6 +308,65 @@ class Controller
         }
     }
 
+    public function uploadSerialCSV()
+    {
+        header('Content-Type: application/json');
+        try {
+            if (!isset($_FILES['csvFile']) || $_FILES['csvFile']['error'] !== UPLOAD_ERR_OK) {
+                throw new Exception('Erro no envio do arquivo. Código: ' . ($_FILES['csvFile']['error'] ?? 'arquivo não enviado'));
+            }
+            $csvFile = $_FILES['csvFile']['tmp_name'];
+            if (!file_exists($csvFile)) {
+                throw new Exception('Arquivo temporário não encontrado');
+            }
+            $handle = fopen($csvFile, 'r');
+            if ($handle === false) {
+                throw new Exception('Erro ao abrir o arquivo CSV');
+            }
+            $header = fgetcsv($handle, 0, ';');
+            $required = ['NotaFiscal', 'DataFaturamento', 'Cliente', 'Serial', 'Imei', 'SKU', 'DataFinalGarantia'];
+            foreach ($required as $col) {
+                if (!in_array($col, $header)) {
+                    throw new Exception("Coluna obrigatória ausente: $col");
+                }
+            }
+            $importados = 0;
+            $erros = 0;
+            while (($data = fgetcsv($handle, 0, ';')) !== false) {
+                if (count($data) >= 7) {
+                    $row = array_combine($header, $data);
+                    $nota = trim($row['NotaFiscal']);
+                    $dataFat = trim($row['DataFaturamento']);
+                    $cliente = trim($row['Cliente']);
+                    $serial = trim($row['Serial']);
+                    $imei = trim($row['Imei']);
+                    $sku = trim($row['SKU']);
+                    $dataFinal = trim($row['DataFinalGarantia']);
+                    if ($this->model->inserirSerial($nota, $dataFat, $cliente, $serial, $imei, $sku, $dataFinal)) {
+                        $importados++;
+                    } else {
+                        $erros++;
+                    }
+                }
+            }
+            fclose($handle);
+            $response = [
+                'success' => true,
+                'message' => "Dados importados com sucesso! ($importados registros)",
+                'importados' => $importados,
+                'erros' => $erros
+            ];
+            echo json_encode($response);
+            exit;
+        } catch (Exception $e) {
+            echo json_encode([
+                'success' => false,
+                'message' => $e->getMessage()
+            ]);
+            exit;
+        }
+    }
+
     public function deleteGarantia()
     {
         header('Content-Type: application/json');
@@ -317,6 +376,31 @@ class Controller
                 throw new Exception("SKU não fornecido");
             }
             $result = $this->model->deleteGarantia($sku);
+            if ($result) {
+                echo json_encode([
+                    'success' => true,
+                    'message' => 'Registro deletado com sucesso'
+                ]);
+            } else {
+                throw new Exception("Registro não encontrado ou não pôde ser deletado");
+            }
+        } catch (Exception $e) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Erro ao deletar registro: ' . $e->getMessage()
+            ]);
+        }
+    }
+
+    public function deleteSerial()
+    {
+        header('Content-Type: application/json');
+        try {
+            $sku = $_POST['sku'] ?? null;
+            if (!$sku) {
+                throw new Exception("SKU não fornecido");
+            }
+            $result = $this->model->deleteSerial($sku);
             if ($result) {
                 echo json_encode([
                     'success' => true,

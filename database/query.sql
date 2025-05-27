@@ -22,7 +22,6 @@ CREATE TABLE tabela_seriais (
     Imei VARCHAR(20),
     SKU VARCHAR(20) NOT NULL,
     DataFinalGarantia DATE NOT NULL,
-    Status VARCHAR(20) NOT NULL,
     PRIMARY KEY (NotaFiscal, Serial)
 );
 

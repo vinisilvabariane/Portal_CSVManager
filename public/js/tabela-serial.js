@@ -39,7 +39,11 @@ document.addEventListener('DOMContentLoaded', function () {
                         item.SKU || '',
                         formatDate(item.DataFinalGarantia),
                         getStatusBadge(item.Status || ''),
-                        '<button class="btn btn-sm btn-outline-primary"><i class="bi bi-eye"></i></button>'
+                        `
+                        <button class="btn btn-sm btn-outline-danger delete-btn" data-sku="${item.SKU}">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                        `
                     ]);
                 });
                 table.draw();
@@ -66,6 +70,128 @@ document.addEventListener('DOMContentLoaded', function () {
         const badgeClass = statusMap[status] || 'status-active';
         return `<span class="status-badge ${badgeClass}">${status}</span>`;
     }
+
+    // Abrir modal de upload ao clicar no botão
+    document.getElementById('openUploadModal')?.addEventListener('click', function () {
+        const modal = new bootstrap.Modal(document.getElementById('uploadModal'));
+        modal.show();
+    });
+
+    // Gerenciamento do modal de upload
+    const csvFileInput = document.getElementById('csvFile');
+    const fileNameDisplay = document.getElementById('fileName');
+    if (csvFileInput && fileNameDisplay) {
+        csvFileInput.addEventListener('change', function () {
+            fileNameDisplay.textContent = this.files.length > 0
+                ? this.files[0].name
+                : 'Nenhum arquivo selecionado';
+        });
+        document.getElementById("uploadBtn").addEventListener("click", function () {
+            const fileInput = document.getElementById("csvFile");
+            const file = fileInput.files[0];
+            if (!file) {
+                Swal.fire("Erro", "Selecione um arquivo CSV.", "error");
+                return;
+            }
+            const formData = new FormData();
+            formData.append("csvFile", file);
+            Swal.fire({
+                title: 'Enviando arquivo',
+                html: 'Por favor, aguarde...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+            fetch("/PortalMultiGarantia/configs/Router.php?action=uploadSerialCSV", {
+                method: "POST",
+                body: formData,
+            })
+                .then(async response => {
+                    const text = await response.text();
+                    try {
+                        return JSON.parse(text);
+                    } catch (e) {
+                        throw new Error(text || 'Erro desconhecido');
+                    }
+                })
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Sucesso',
+                            text: data.message,
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('uploadModal'));
+                        modal.hide();
+                        fetchData();
+                    } else {
+                        throw new Error(data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error("Erro no upload:", error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Erro',
+                        text: error.message || 'Falha no upload do arquivo.',
+                    });
+                });
+        });
+
+        $('#uploadModal').on('hidden.bs.modal', function () {
+            document.getElementById('uploadForm').reset();
+            fileNameDisplay.textContent = 'Nenhum arquivo selecionado';
+        });
+    }
+
+    // Função para deletar uma linha
+    $('#tabela-serial tbody').on('click', '.delete-btn', function () {
+        const sku = $(this).data('sku');
+        Swal.fire({
+            title: 'Tem certeza?',
+            text: "Você não poderá reverter isso!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sim, deletar!',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch('/PortalMultiGarantia/configs/Router.php?action=deleteSerial', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `sku=${encodeURIComponent(sku)}`
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire(
+                                'Deletado!',
+                                'O registro foi deletado.',
+                                'success'
+                            );
+                            fetchData();
+                        } else {
+                            throw new Error(data.message || 'Erro ao deletar');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire(
+                            'Erro!',
+                            error.message || 'Ocorreu um erro ao deletar o registro.',
+                            'error'
+                        );
+                    });
+            }
+        });
+    });
 
     // Refresh button functionality
     document.getElementById('refreshBtn')?.addEventListener('click', function () {

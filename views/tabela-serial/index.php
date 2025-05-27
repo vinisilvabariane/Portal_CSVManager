@@ -25,8 +25,8 @@
                         <h2><i class="bi bi-file-earmark-text me-2"></i> Registros de Seriais</h2>
                     </div>
                     <div class="col-md-6 text-md-end">
-                        <button class="btn btn-primary">
-                            <i class="bi bi-plus-circle me-1"></i> Novo Registro
+                        <button class="btn btn-primary" id="openUploadModal">
+                            <i class="bi bi-upload me-1"></i> Upload CSV
                         </button>
                     </div>
                 </div>
@@ -49,8 +49,37 @@
             </table>
         </div>
     </div>
-    </div>
 
+    <!-- Modal de Upload de CSV -->
+    <div class="modal fade" id="uploadModal" tabindex="-1" aria-labelledby="uploadModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="uploadModalLabel"><i class="bi bi-upload me-2"></i>Upload de CSV</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="uploadForm" enctype="multipart/form-data">
+                        <div class="file-upload-wrapper">
+                            <input type="file" id="csvFile" class="file-upload-input" accept=".csv" required>
+                            <label for="csvFile" class="file-upload-label">
+                                <i class="bi bi-cloud-arrow-up me-2"></i>Selecione um arquivo CSV
+                            </label>
+                            <div id="fileName" class="file-name">Nenhum arquivo selecionado</div>
+                        </div>
+                        <div class="progress" id="uploadProgress">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                    <button type="button" class="btn btn-primary" id="uploadBtn">Enviar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div> <!-- Fim do modal -->
     <?php require_once($_SERVER["DOCUMENT_ROOT"] . "/PortalMultiGarantia/includes/footer.php"); ?>
 
     <!-- Scripts -->
@@ -58,6 +87,7 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="/PortalMultiGarantia/public/js/tabela-serial.js"></script>
 </body>
 

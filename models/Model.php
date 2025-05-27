@@ -74,8 +74,7 @@ class Model
                     Serial, 
                     Imei, 
                     SKU, 
-                    DataFinalGarantia, 
-                    Status 
+                    DataFinalGarantia
                   FROM tabela_seriais
                   ORDER BY DataFaturamento DESC";
         $stmt = $this->pdo->prepare($query);
@@ -114,7 +113,7 @@ class Model
         $today = new DateTime();
         $finalDate = new DateTime($dataFinal);
         $interval = $today->diff($finalDate);
-        if ($finalDate > $today) {
+        if ($finalDate < $today) {
             return 'Expirada';
         } elseif ($interval->days <= 30) {
             return 'Próximo do fim';
@@ -268,6 +267,34 @@ class Model
         }
     }
 
+    //FUNÇÃO PARA INSERIR O CSV DE SERIAIS
+    public function inserirSerial($notaFiscal, $dataFaturamento, $cliente, $serial, $imei, $sku, $dataFinalGarantia)
+    {
+        try {
+            $sql = "INSERT INTO tabela_seriais 
+            (NotaFiscal, DataFaturamento, Cliente, Serial, Imei, SKU, DataFinalGarantia)
+            VALUES (:notaFiscal, :dataFaturamento, :cliente, :serial, :imei, :sku, :dataFinalGarantia)
+            ON DUPLICATE KEY UPDATE 
+                DataFaturamento = VALUES(DataFaturamento),
+                Cliente = VALUES(Cliente),
+                Imei = VALUES(Imei),
+                SKU = VALUES(SKU),
+                DataFinalGarantia = VALUES(DataFinalGarantia)";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->bindParam(':notaFiscal', $notaFiscal);
+            $stmt->bindParam(':dataFaturamento', $dataFaturamento);
+            $stmt->bindParam(':cliente', $cliente);
+            $stmt->bindParam(':serial', $serial);
+            $stmt->bindParam(':imei', $imei);
+            $stmt->bindParam(':sku', $sku);
+            $stmt->bindParam(':dataFinalGarantia', $dataFinalGarantia);
+            return $stmt->execute();
+        } catch (PDOException $e) {
+            error_log("Erro ao inserir serial: " . $e->getMessage());
+            return false;
+        }
+    }
+
     public function deleteGarantia($sku)
     {
         try {
@@ -278,6 +305,20 @@ class Model
             return $stmt->rowCount() > 0;
         } catch (PDOException $e) {
             error_log("Erro ao deletar garantia: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function deleteSerial($sku)
+    {
+        try {
+            $stmt = $this->pdo->prepare("DELETE FROM tabela_seriais WHERE SKU = :sku");
+            $sku = htmlspecialchars(strip_tags($sku));
+            $stmt->bindParam(":sku", $sku);
+            $stmt->execute();
+            return $stmt->rowCount() > 0;
+        } catch (PDOException $e) {
+            error_log("Erro ao deletar serial: " . $e->getMessage());
             return false;
         }
     }
