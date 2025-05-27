@@ -64,3 +64,48 @@
          padding: 15px;
      }
  }
+
+ .file-upload-wrapper {
+     position: relative;
+     margin-bottom: 1rem;
+ }
+
+ .file-upload-input {
+     width: 100%;
+     height: 46px;
+     opacity: 0;
+     position: absolute;
+     top: 0;
+     left: 0;
+     cursor: pointer;
+ }
+
+ .file-upload-label {
+     width: 100%;
+     padding: 10px 15px;
+     border: 1px solid #ddd;
+     border-radius: 4px;
+     background-color: #f8f9fa;
+     text-align: center;
+     cursor: pointer;
+ }
+
+ .file-upload-label:hover {
+     background-color: #e9ecef;
+ }
+
+ .file-name {
+     margin-top: 5px;
+     font-size: 0.9rem;
+     color: #6c757d;
+ }
+
+ .template-download {
+     margin-top: 20px;
+     text-align: center;
+ }
+
+ #uploadProgress {
+     display: none;
+     margin-top: 10px;
+ }

@@ -12,7 +12,6 @@
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css">
     <link rel="stylesheet" href="/PortalMultiGarantia/public/css/fonts.css">
     <link rel="stylesheet" href="./style.css">
-
 </head>
 
 <body>
@@ -26,7 +25,7 @@
                         <h2><i class="bi bi-file-earmark-text me-2"></i> Registros de Garantias</h2>
                     </div>
                     <div class="col-md-6 text-md-end">
-                        <button class="btn btn-primary">
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#uploadModal">
                             <i class="bi bi-plus-circle me-1"></i> Novo Registro
                         </button>
                     </div>
@@ -40,14 +39,43 @@
                         <th>SKU</th>
                         <th>Tempo Garantia (Meses)</th>
                         <th>Bateria</th>
-                        <th>Status</th>
+                        <th>Data Final Garantia</th>
                         <th>Ações</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- Os dados serão preenchidos via JavaScript -->
                 </tbody>
             </table>
+        </div>
+    </div>
+
+    <!-- Modal de Upload de CSV -->
+    <div class="modal fade" id="uploadModal" tabindex="-1" aria-labelledby="uploadModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="uploadModalLabel"><i class="bi bi-upload me-2"></i>Upload de CSV</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="uploadForm" enctype="multipart/form-data">
+                        <div class="file-upload-wrapper">
+                            <input type="file" id="csvFile" class="file-upload-input" accept=".csv" required>
+                            <label for="csvFile" class="file-upload-label">
+                                <i class="bi bi-cloud-arrow-up me-2"></i>Selecione um arquivo CSV
+                            </label>
+                            <div id="fileName" class="file-name">Nenhum arquivo selecionado</div>
+                        </div>
+                        <div class="progress" id="uploadProgress">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                    <button type="button" class="btn btn-primary" id="uploadBtn">Enviar</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -58,6 +86,7 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="/PortalMultiGarantia/public/js/tabela-garantia.js"></script>
 </body>
 
