@@ -14,7 +14,7 @@ CREATE TABLE users (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE NotasFiscaisGarantias (
+CREATE TABLE tabela_seriais (
     NotaFiscal VARCHAR(20) NOT NULL,
     DataFaturamento DATE NOT NULL,
     Cliente VARCHAR(100) NOT NULL,
@@ -26,7 +26,7 @@ CREATE TABLE NotasFiscaisGarantias (
     PRIMARY KEY (NotaFiscal, Serial)
 );
 
-CREATE TABLE GarantiasProdutos (
+CREATE TABLE tabela_garantia (
     Cliente VARCHAR(100) NOT NULL,
     SKU VARCHAR(20) NOT NULL,
     TempoGarantiaMeses INT NOT NULL,

@@ -103,12 +103,7 @@ class Model
         $stmt->execute();
         $garantias = $stmt->fetchAll(PDO::FETCH_ASSOC);
         foreach ($garantias as &$garantia) {
-            $garantia['NotaFiscal'] = 'N/A';
-            $garantia['DataFaturamento'] = 'N/A';
-            $garantia['Serial'] = 'N/A';
-            $garantia['Imei'] = 'N/A';
             $garantia['DataFinalGarantia'] = date('Y-m-d', strtotime('+' . $garantia['TempoGarantiaMeses'] . ' months'));
-            $garantia['Status'] = $this->calculateStatus($garantia['DataFinalGarantia']);
         }
         return $garantias;
     }
@@ -141,7 +136,6 @@ class Model
                     Imei,
                     SKU,
                     DataFinalGarantia,
-                    Status,
                     CASE 
                         WHEN DataFinalGarantia >= CURDATE() THEN 'Dentro da Garantia'
                         ELSE 'Fora da Garantia'
@@ -164,7 +158,6 @@ class Model
         }
     }
 
-    //FUNÇÃO DE COSULTA DE GARANTIA POR NOTA FISCAL
     public function getGarantiaByNota($numeroNota)
     {
         try {
@@ -177,11 +170,6 @@ class Model
                 Imei,
                 SKU,
                 DataFinalGarantia,
-                Status,
-                CASE 
-                    WHEN DataFinalGarantia >= CURDATE() THEN 'Dentro da Garantia'
-                    ELSE 'Fora da Garantia'
-                END AS SituacaoGarantia,
                 DATEDIFF(DataFinalGarantia, CURDATE()) AS DiasRestantes
             FROM tabela_seriais 
             WHERE NotaFiscal = :nota
@@ -193,6 +181,9 @@ class Model
                 foreach ($results as &$result) {
                     $result['DataFaturamento'] = date('d/m/Y', strtotime($result['DataFaturamento']));
                     $result['DataFinalGarantia'] = date('d/m/Y', strtotime($result['DataFinalGarantia']));
+                    $dataFinal = DateTime::createFromFormat('d/m/Y', $result['DataFinalGarantia']);
+                    $hoje = new DateTime();
+                    $result['SituacaoGarantia'] = ($dataFinal && $dataFinal >= $hoje) ? 'Dentro da Garantia' : 'Fora da Garantia';
                 }
                 return ['success' => true, 'data' => $results];
             }
@@ -254,5 +245,40 @@ class Model
         $stmt->bindParam(':id', $userId, PDO::PARAM_INT);
         $stmt->execute();
         return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    //FUNÇÃO PARA INSERIR O CSV DE GARANTIAS
+    public function inserirGarantia($cliente, $sku, $tempoGarantia, $bateria)
+    {
+        try {
+            $stmt = $this->pdo->prepare("INSERT INTO tabela_garantia (Cliente, SKU, TempoGarantiaMeses, Bateria)
+                            VALUES (?, ?, ?, ?)
+                            ON DUPLICATE KEY UPDATE 
+                            TempoGarantiaMeses = VALUES(TempoGarantiaMeses), 
+                            Bateria = VALUES(Bateria)");
+            $stmt->bindParam(1, $cliente, PDO::PARAM_STR);
+            $stmt->bindParam(2, $sku, PDO::PARAM_STR);
+            $stmt->bindParam(3, $tempoGarantia, PDO::PARAM_INT);
+            $stmt->bindParam(4, $bateria, PDO::PARAM_INT);
+            $stmt->execute();
+            return true;
+        } catch (PDOException $e) {
+            error_log("Erro ao inserir garantia: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function deleteGarantia($sku)
+    {
+        try {
+            $stmt = $this->pdo->prepare("DELETE FROM tabela_garantia WHERE SKU = :sku");
+            $sku = htmlspecialchars(strip_tags($sku));
+            $stmt->bindParam(":sku", $sku);
+            $stmt->execute();
+            return $stmt->rowCount() > 0;
+        } catch (PDOException $e) {
+            error_log("Erro ao deletar garantia: " . $e->getMessage());
+            return false;
+        }
     }
 }

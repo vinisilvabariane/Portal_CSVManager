@@ -5,12 +5,10 @@ require_once $_SERVER["DOCUMENT_ROOT"] . "/PortalMultiGarantia/models/Model.php"
 class Controller
 {
     private $model;
-
     public function __construct()
     {
         $this->model = new Model();
     }
-
     public function login(): void
     {
         if ($_SERVER["REQUEST_METHOD"] === "POST") {
@@ -102,7 +100,6 @@ class Controller
         }
         try {
             $warrantyData = $this->model->consultGarantia($serialNumber);
-
             if ($warrantyData) {
                 echo json_encode([
                     'success' => true,
@@ -206,59 +203,40 @@ class Controller
     public function updateUserProfile()
     {
         header('Content-Type: application/json');
-
         try {
-            // Inicia sessão se necessário
             if (session_status() === PHP_SESSION_NONE) {
                 session_start();
             }
-
-            // Verifica autenticação
             if (!isset($_SESSION['user_id'])) {
                 throw new Exception("Usuário não autenticado");
             }
-
             $userId = $_SESSION['user_id'];
             $input = json_decode(file_get_contents('php://input'), true);
-
-            // Validação dos dados de entrada
             if (empty($input)) {
                 throw new Exception("Dados inválidos");
             }
-
-            // Sanitização e validação
             $email = filter_var($input['email'] ?? '', FILTER_SANITIZE_EMAIL);
             $phone = preg_replace('/[^0-9]/', '', $input['phone'] ?? '');
             $cnpj = preg_replace('/[^0-9]/', '', $input['cnpj'] ?? '');
             $orgao = filter_var($input['orgao'] ?? '', FILTER_SANITIZE_STRING);
-
-            // Validações obrigatórias
             if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
                 throw new Exception("Email inválido");
             }
-
             if (empty($orgao)) {
                 throw new Exception("Órgão é obrigatório");
             }
-
             if (!empty($cnpj) && strlen($cnpj) != 14) {
                 throw new Exception("CNPJ deve conter 14 dígitos");
             }
-
-            // Atualiza no banco
             $userModel = new Model();
             $result = $userModel->updateProfile($userId, $email, $phone, $cnpj, $orgao);
-
             if (!$result['success']) {
                 throw new Exception($result['message']);
             }
-
-            // Atualiza sessão
             $_SESSION['user_email'] = $email;
             $_SESSION['user_phone'] = $phone;
             $_SESSION['user_cnpj'] = $cnpj;
             $_SESSION['user_orgao'] = $orgao;
-
             echo json_encode([
                 'success' => true,
                 'message' => 'Perfil atualizado com sucesso',
@@ -277,6 +255,82 @@ class Controller
             ]);
         }
         exit;
+    }
+
+    public function uploadGarantiasCSV()
+    {
+        header('Content-Type: application/json');
+        try {
+            if (!isset($_FILES['csvFile']) || $_FILES['csvFile']['error'] !== UPLOAD_ERR_OK) {
+                throw new Exception('Erro no envio do arquivo. Código: ' . ($_FILES['csvFile']['error'] ?? 'arquivo não enviado'));
+            }
+            $csvFile = $_FILES['csvFile']['tmp_name'];
+            if (!file_exists($csvFile)) {
+                throw new Exception('Arquivo temporário não encontrado');
+            }
+            $handle = fopen($csvFile, 'r');
+            if ($handle === false) {
+                throw new Exception('Erro ao abrir o arquivo CSV');
+            }
+            fgetcsv($handle, 0, ';');
+            require_once $_SERVER["DOCUMENT_ROOT"] . "/PortalMultiGarantia/models/Model.php";
+            $model = new Model();
+            $importados = 0;
+            $erros = 0;
+            while (($data = fgetcsv($handle, 0, ';')) !== false) {
+                if (count($data) >= 4) {
+                    $cliente = trim($data[0]);
+                    $sku = trim($data[1]);
+                    $tempo = intval($data[2]);
+                    $bateria = trim($data[3]);
+                    if ($model->inserirGarantia($cliente, $sku, $tempo, $bateria)) {
+                        $importados++;
+                    } else {
+                        $erros++;
+                    }
+                }
+            }
+            fclose($handle);
+            $response = [
+                'success' => true,
+                'message' => "Dados importados com sucesso! ($importados registros)",
+                'importados' => $importados,
+                'erros' => $erros
+            ];
+            echo json_encode($response);
+            exit;
+        } catch (Exception $e) {
+            echo json_encode([
+                'success' => false,
+                'message' => $e->getMessage()
+            ]);
+            exit;
+        }
+    }
+
+    public function deleteGarantia()
+    {
+        header('Content-Type: application/json');
+        try {
+            $sku = $_POST['sku'] ?? null;
+            if (!$sku) {
+                throw new Exception("SKU não fornecido");
+            }
+            $result = $this->model->deleteGarantia($sku);
+            if ($result) {
+                echo json_encode([
+                    'success' => true,
+                    'message' => 'Registro deletado com sucesso'
+                ]);
+            } else {
+                throw new Exception("Registro não encontrado ou não pôde ser deletado");
+            }
+        } catch (Exception $e) {
+            echo json_encode([
+                'success' => false,
+                'message' => 'Erro ao deletar registro: ' . $e->getMessage()
+            ]);
+        }
     }
 
     private function sendErrorResponse(int $statusCode, string $message): void

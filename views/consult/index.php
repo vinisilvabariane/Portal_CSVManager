@@ -47,7 +47,6 @@
                             <div id="resultContainer" class="result-section">
                                 <h4 class="result-title"><i class="bi bi-card-checklist me-2"></i> Resultado da Consulta</h4>
                                 <div id="garantiaInfo">
-                                    <!-- Resultados serão inseridos aqui via JavaScript -->
                                 </div>
                             </div>
 

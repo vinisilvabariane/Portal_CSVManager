@@ -62,11 +62,8 @@ document.addEventListener('DOMContentLoaded', function () {
                             <td>${produto.Descricao}</td>
                             <td>${produto.Seriais.join(', ')}</td>
                             <td>${produto.DataFinalGarantia ? formatDate(produto.DataFinalGarantia) : 'N/A'}</td>
-                            <td>
-                                <span class="badge bg-${produto.SituacaoGarantia === 'Dentro da Garantia' ? 'success' : 'danger'}">
-                                    ${produto.SituacaoGarantia}
-                                </span>
-                            </td>
+                            <td>${produto.SituacaoGarantia || 'N/A'}</td>
+                            
                         `;
                         tabelaProdutos.appendChild(row);
                         setTimeout(() => {

@@ -17,6 +17,12 @@ switch ($action) {
     case "getGarantia";
         $controller->getGarantia();
         break;
+    case "uploadGarantiasCSV";
+        $controller->uploadGarantiasCSV();
+        break;
+    case "deleteGarantia";
+        $controller->deleteGarantia();
+        break;
     case "getGarantiaByNota";
         $controller->getGarantiaByNota();
         break;
