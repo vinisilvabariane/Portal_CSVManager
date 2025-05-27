@@ -69,11 +69,11 @@
   </div>
 </nav>
 
-<!-- Debug Session (opcional, remova em produção) -->
+<!-- Debug Session (opcional, remova em produção)
 <div style="position: fixed; bottom: 0; left: 0; background: white; z-index: 9999; padding: 10px; border: 1px solid red;">
 <?php
-echo '<pre>';
-var_dump($_SESSION);
-echo '</pre>';
+// echo '<pre>';
+// var_dump($_SESSION);
+// echo '</pre>';
 ?>
-</div>
+</div> -->
