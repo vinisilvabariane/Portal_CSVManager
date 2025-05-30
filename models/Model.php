@@ -15,13 +15,12 @@ class Model
     public function login(string $username, string $password): array|false
     {
         try {
-            $query = "SELECT * FROM users WHERE username = :username AND password = MD5(:password)";
+            $query = "SELECT * FROM users WHERE username = :username";
             $stmt = $this->pdo->prepare($query);
             $stmt->bindParam(":username", $username, PDO::PARAM_STR);
-            $stmt->bindParam(":password", $password, PDO::PARAM_STR);
             $stmt->execute();
             $user = $stmt->fetch(PDO::FETCH_ASSOC);
-            if ($user) {
+            if ($user && password_verify($password, $user['password'])) {
                 unset($user['password']);
                 return $user;
             }
@@ -50,6 +49,9 @@ class Model
                 throw new PDOException("cnpj já cadastrado", 23000);
             }
         }
+        // Gera o hash seguro da senha
+        $hashedPassword = password_hash($data['password'], PASSWORD_DEFAULT);
+
         $query = "INSERT INTO users (username,orgao, email, phone, cnpj, password, role, created_at) 
               VALUES (:username, :orgao, :email, :phone, :cnpj, :password, :role, NOW())";
         $stmt = $this->pdo->prepare($query);
@@ -59,7 +61,7 @@ class Model
             ':email' => $data['email'],
             ':phone' => $data['phone'] ?? null,
             ':cnpj' => $data['cnpj'] ?? null,
-            ':password' => $data['password'],
+            ':password' => $hashedPassword,
             ':role' => $data['role'] ?? 'membro'
         ]);
     }

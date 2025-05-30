@@ -57,7 +57,6 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
         try {
-            formData.password = md5(formData.password);
             const response = await fetch('/PortalMultiGarantia/configs/Router.php?action=createUser', {
                 method: 'POST',
                 headers: {
