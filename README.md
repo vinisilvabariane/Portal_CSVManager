@@ -29,12 +29,11 @@ O Portal MultiGarantia é um sistema web desenvolvido para que clientes possam c
 
 1. **Clone o repositório:**
    ```sh
-   git clone https://github.com/seu-usuario/PortalMultiGarantia.git
+   https://github.com/vinisilvabariane/PortalMultiGarantia.git
    ```
 2. **Configure o DOCUMENT_ROOT do seu ambiente:**
 
    Exemplo: require_once $_SERVER["DOCUMENT_ROOT"] . "/PortalMultiGarantia/configs/arquivo.php";
-   ```
 
 ## Uso
 
