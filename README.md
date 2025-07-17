@@ -1,40 +1,32 @@
-# Portal MultiGarantia
+# Portal CSVManager
 
-Bem-vindo ao **Portal MultiGarantia** – uma solução profissional para gestão e consulta de garantias de produtos.
+Bem-vindo ao **Portal CSVManager** – uma solução profissional para gestão e controle de arquivos CSV.
 
 ## Descrição
 
-O Portal MultiGarantia é um sistema web desenvolvido para que clientes possam consultar a garantia de seus produtos utilizando o número de série ou a nota fiscal. O sistema possui dois níveis de acesso:
+O Portal CSVManager é um sistema web desenvolvido para facilitar o gerenciamento de arquivos CSV, permitindo upload, visualização estruturada dos dados e controle de permissões. O sistema possui dois níveis de acesso:
 
-- **Membro:** Pode consultar garantias por número serial ou nota fiscal.
-- **Administrador:** Além das funcionalidades de membro, pode cadastrar novos usuários e gerenciar registros.
+- **Membro:** Pode visualizar e consultar arquivos CSV previamente carregados.
+- **Administrador:** Além das funcionalidades de membro, pode fazer upload de novos arquivos e gerenciar registros e usuários.
 
 ## Requisitos
 
-- **PHP** 8 ou superior
-- **MySQL** 8 ou superior
-- **Laragon** (ou outro ambiente PHP)
-- **Apache** (ou Nginx)
+- **PHP** 8 ou superior  
+- **MySQL** 8 ou superior  
+- **Laragon** (ou outro ambiente PHP)  
+- **Apache** (ou Nginx)  
 - **Composer** (opcional, para dependências PHP)
 
 ## Tecnologias Utilizadas
 
-- PHP (backend)
-- MySQL (banco de dados)
-- JavaScript (frontend)
-- Bootstrap (estilização)
+- PHP (backend)  
+- MySQL (banco de dados)  
+- JavaScript (frontend)  
+- Bootstrap (estilização)  
 - Apache (servidor web)
 
 ## Instalação
 
 1. **Clone o repositório:**
    ```sh
-   https://github.com/vinisilvabariane/PortalMultiGarantia.git
-   ```
-2. **Configure o DOCUMENT_ROOT do seu ambiente:**
-
-   Exemplo: require_once $_SERVER["DOCUMENT_ROOT"] . "/PortalMultiGarantia/configs/arquivo.php";
-
-## Uso
-
-- Para **administrar usuários e registros**, faça login como administrador e acesse o painel de controle.
+   git clone https://github.com/vinisilvabariane/PortalCSVManager.git
